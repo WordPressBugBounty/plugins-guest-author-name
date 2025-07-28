@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/paypalme/nomadnewyork
 Tags: Guest Author Name, Override Author Name, Author
 Requires at least: 4.1
 Tested up to: 6.8
-Stable Tag: 4.41
+Stable Tag: 4.42
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -111,6 +111,8 @@ This was a bug, but if you were using it as a feature, then you can use this cod
 2. Post with Guest Author
 3. Settings Page
 == Changelog ==
+= 4.42 = 
+Fix: Security fix broke punctuation
 = 4.41 =
 Fix: Security fix broke unicode characters
 = 4.40 = 

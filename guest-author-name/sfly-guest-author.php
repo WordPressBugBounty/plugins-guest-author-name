@@ -6,7 +6,7 @@ Plugin Name: (Simply) Guest Author Name
 Slug: guest-author-name
 Plugin URI: http://plugins.shooflysolutions.com/guest-author-name
 Description: An ideal plugin for cross posting. Guest Author Name helps you to publish posts by authors without having to add them as users. If the Guest Author field is filled in on the post, the Guest Author name will override the author.  The optional Url link allows you to link to another web site.
-Version: 4.41
+Version: 4.42
 Author URI: http://www.shooflysolutions.com
 Copyright (C) 2015, 2016 Shoofly Solutions
 Contact me at http://www.shooflysolutions.com
@@ -1009,8 +1009,10 @@ if (!class_exists('sfly_guest_author')):
 
 			// Remove anything with non-word characters (like =, (), etc.)
 			// This keeps only alphanumeric words, underscores, and hyphens
-			preg_match_all('/[\p{L}\p{N}_-]+/u', $input, $matches);
+			preg_match_all('/[\p{L}\p{N}_\',\.\:-]+/u', $input, $matches);
+			//preg_match_all('/[\p{L}\p{N}_-]+/u', $input, $matches);
 			//preg_match_all('/\b[a-zA-Z0-9_-]+\b/', $input, $matches);
+
 			$input = implode(' ', $matches[0]);
 
 			return $input;
