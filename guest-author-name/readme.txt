@@ -3,7 +3,7 @@ Contributors: nomadcoder, seancjones
 Donate link: https://www.paypal.com/paypalme/nomadnewyork
 Tags: Guest Author Name, Override Author Name, Author
 Requires at least: 4.1
-Tested up to: 6.8
+Tested up to: 6.9
 Stable Tag: 4.42
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
