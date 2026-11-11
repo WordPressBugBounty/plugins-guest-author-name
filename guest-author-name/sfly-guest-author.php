@@ -4,17 +4,17 @@
 Author: Shoofly Solutions
 Plugin Name: (Simply) Guest Author Name
 Slug: guest-author-name
-Plugin URI: http://plugins.shooflysolutions.com/guest-author-name
+Plugin URI: https://plugins.shooflysolutions.com/guest-author-name
 Description: An ideal plugin for cross posting. Guest Author Name helps you to publish posts by authors without having to add them as users. If the Guest Author field is filled in on the post, the Guest Author name will override the author.  The optional Url link allows you to link to another web site.
-Version: 4.42
-Author URI: http://www.shooflysolutions.com
+Version: 4.50
+Author URI: https://www.shooflysolutions.com
 Copyright (C) 2015, 2016 Shoofly Solutions
-Contact me at http://www.shooflysolutions.com
+Contact me at https:////www.shooflysolutions.com
 Text Domain: sfly_guest_author
 License:     GPL2
  License URI: https://www.gnu.org/licenses/gpl-2.0.html */
 defined('ABSPATH') or die('No script kiddies please!');
-remove_filter('pre_user_description', 'wp_filter_kses');
+//remove_filter('pre_user_description', 'wp_filter_kses'); - CVE-2026-126009
 
 
 
@@ -133,7 +133,7 @@ if (!class_exists('sfly_guest_author')):
 				wp_enqueue_script('guest_author_post_scripts', plugins_url('assets/guest-author-post.js', __FILE__), array('jquery'), '1.10', true);
 				$this->sfly_guest_author_open_link($options, $open, $clear);
 			}
-
+			//remove_filter('pre_user_description', 'wp_filter_kses'); - CVE-2026-126009
 
 		}
 
@@ -145,6 +145,7 @@ if (!class_exists('sfly_guest_author')):
 		 */
 		function sfly_guest_author_add_filters()
 		{
+			$options = get_option('guest_author_name_settings');
 			$admin = isset($options['guest_author_name_admin']) ? true : false;
 
 			if (!is_admin() || $admin || wp_doing_ajax()) {
@@ -273,14 +274,14 @@ if (!class_exists('sfly_guest_author')):
 		 * @param string $author - author name
 		 * @param int $comment_ID - comment id
 		 * @param object $comment
-		 * @return void
+		 * @return string
 		 */
 		function comment_author($author, $comment_ID, $comment)
 		{
 			if ($author != $comment->author)
-				return $comment->comment_author;
-			else
-				return $author;
+				$author = $comment->comment_author;
+
+			return esc_attr($author);
 
 
 
@@ -302,7 +303,7 @@ if (!class_exists('sfly_guest_author')):
 				$url = $comment->comment_author_url;
 
 
-				if (empty($url) || 'http://' == $url) {
+				if (empty($url) || 'https:////' == $url) {
 					$return = $author;
 				} else {
 					$return = "<a href='$url' rel='external nofollow' class='url'>$author</a>";
@@ -339,7 +340,7 @@ if (!class_exists('sfly_guest_author')):
 		{
 			global $post;
 			if (is_single()) {
-				$author = esc_attr(get_post_meta($post->ID, 'sfly_guest_author_names', true));
+				$author = get_post_meta($post->ID, 'sfly_guest_author_names', true);
 				if ($author)
 
 					$classes[] = 'sfly_guest-author-post';
@@ -355,7 +356,7 @@ if (!class_exists('sfly_guest_author')):
 		function register_author()
 		{
 			$id = $this->get_post_id();
-			$gauthor = esc_attr(get_post_meta($id, 'sfly_guest_author_names', true));
+			$gauthor = get_post_meta($id, 'sfly_guest_author_names', true);
 			$guest_author_post_id = null;
 			if (!$gauthor)
 				return;
@@ -402,7 +403,7 @@ if (!class_exists('sfly_guest_author')):
 		function guest_author_id($id)
 		{
 			$id = $this->get_post_id();
-			$author = esc_attr(get_post_meta($id, 'sfly_guest_author_names', true));
+			$author = get_post_meta($id, 'sfly_guest_author_names', true);
 			if ($author)
 				$id = NULL;
 			return $id;
@@ -455,9 +456,9 @@ if (!class_exists('sfly_guest_author')):
 		{
 			$id = $this->get_post_id();
 
-			$author = esc_attr(get_post_meta($id, 'sfly_guest_author_names', true));
+			$author = get_post_meta($id, 'sfly_guest_author_names', true);
 			if ($author) {
-				$name = $author;
+				$name = esc_attr($author);
 
 			}
 			return $name;
@@ -472,7 +473,7 @@ if (!class_exists('sfly_guest_author')):
 		function guest_author_link($link)
 		{
 			$id = $this->get_post_id();
-			$author = esc_attr(get_post_meta($id, 'sfly_guest_author_names', true));
+			$author = get_post_meta($id, 'sfly_guest_author_names', true);
 			if ($author) {
 				$link = get_post_meta($id, 'sfly_guest_link', true);
 				if (!$link)
@@ -489,15 +490,16 @@ if (!class_exists('sfly_guest_author')):
 		 */
 		function guest_author_description($description)
 		{
+
 			$id = $this->get_post_id();
-			$author = esc_attr(get_post_meta($id, 'sfly_guest_author_names', true));
+			$author = get_post_meta($id, 'sfly_guest_author_names', true);
 			if ($author) {
 				$options = get_option('guest_author_name_settings');
 				$allowhtml = isset($options['guest_author_allow_html']) ? true : false;
 
-				if ($allowhtml)
+				if ($allowhtml) {
 					$description = wp_kses_post(get_post_meta($id, 'sfly_guest_author_description', true));
-				else
+				} else
 					$description = esc_attr(get_post_meta($id, 'sfly_guest_author_description', true));
 
 				if (!$description)
@@ -535,7 +537,7 @@ if (!class_exists('sfly_guest_author')):
 		function guest_author_email($email)
 		{
 			$id = $this->get_post_id();
-			$author = esc_attr(get_post_meta($id, 'sfly_guest_author_names', true));
+			$author = get_post_meta($id, 'sfly_guest_author_names', true);
 			if ($author) {
 				$email = esc_html(get_post_meta($id, 'sfly_guest_author_email', true));
 				if (!$email)
@@ -575,7 +577,7 @@ if (!class_exists('sfly_guest_author')):
 			} else {
 				$id = $this->get_post_id();
 
-				$author = esc_attr(get_post_meta($id, 'sfly_guest_author_names', true));
+				$author = get_post_meta($id, 'sfly_guest_author_names', true);
 
 				if ($author) {
 					$email = esc_html(get_post_meta($id, 'sfly_guest_author_email', true));
@@ -613,7 +615,7 @@ if (!class_exists('sfly_guest_author')):
 			} else {
 				$id = $this->get_post_id();
 
-				$author = esc_attr(get_post_meta($id, 'sfly_guest_author_names', true));
+				$author = get_post_meta($id, 'sfly_guest_author_names', true);
 
 				if ($author) {
 					$email = esc_html(get_post_meta($id, 'sfly_guest_author_email', true));
@@ -657,7 +659,7 @@ if (!class_exists('sfly_guest_author')):
 			} else {
 				$id = $this->get_post_id();
 
-				$author = esc_attr(get_post_meta($id, 'sfly_guest_author_names', true));
+				$author = get_post_meta($id, 'sfly_guest_author_names', true);
 
 				if ($author) {
 					$email = esc_html(get_post_meta($id, 'sfly_guest_author_email', true));
@@ -674,7 +676,7 @@ if (!class_exists('sfly_guest_author')):
 			if (isset($avatar_url)) {
 				$avatar_url = "'" . $avatar_url . "'";
 
-				$html = preg_replace('/<a href="(http:\/\/)?[\w.]+\/([\w]+)"\s?>/', $avatar_url, $url);
+				$html = preg_replace('/<a href="(https://\/\/)?[\w.]+\/([\w]+)"\s?>/', $avatar_url, $url);
 
 				return $html;
 			} else {
@@ -696,7 +698,7 @@ if (!class_exists('sfly_guest_author')):
 		function get_guest_gravatar($email, $s = 80, $d = 'mm', $r = 'g', $img = false, $atts = array())
 		{
 
-			$url = 'http://www.gravatar.com/avatar/';
+			$url = 'https:////www.gravatar.com/avatar/';
 			$url .= md5(strtolower(trim($email)));
 
 			$url .= "?s=$s&d=$d&r=$r";
@@ -724,7 +726,7 @@ if (!class_exists('sfly_guest_author')):
 		 */
 		function get_guest_gravatar_link($email, $s = 80, $d = 'mm', $r = 'g', $img = false, $atts = array())
 		{
-			$link = 'http://www.gravatar.com/avatar/';
+			$link = 'https:////www.gravatar.com/avatar/';
 			$link .= md5(strtolower(trim($email)));
 
 			$link .= "?s=$s&d=$d&r=$r";
@@ -842,7 +844,7 @@ if (!class_exists('sfly_guest_author')):
 
 			switch ($column_name) {
 				case 'sfly_guest_author':
-					echo sanitize_text_field(get_post_meta($id, 'sfly_guest_author_names', TRUE));
+					echo esc_attr(get_post_meta($id, 'sfly_guest_author_names', TRUE)); //no html here
 					break;
 				case 'sfly_guest_link':
 					echo esc_url(get_post_meta($id, 'sfly_guest_link', TRUE));
@@ -857,39 +859,8 @@ if (!class_exists('sfly_guest_author')):
 			}
 		}
 
-		/**
-		 * save_quick_meta function.
-		 * save the data from the quick edit screen
-		 * @access public
-		 * @param mixed $post_id
-		 * @return void
-		 */
-		function save_quick_meta($post_id, $post)
-		{
 
-			$post_types = array('post', 'page');	 //limit meta box to certain post types
-			if (in_array($post_type, $post_types)) {
-				if ($printNonce) {
-					$printNonce = FALSE;
-					wp_nonce_field(plugin_basename(__FILE__), 'guest_author_edit_nonce');
-				}
-				if (!current_user_can('edit_post', $post_id)) {
-					return;
-				}
-				if (isset($_REQUEST['sfly_guest_author'])) {
-					update_post_meta($post_id, 'sfly_guest_author', santize_text_field($_REQUEST['sfly_guest_author']));
-				}
-				if (isset($_REQUEST['sfly_guest_link'])) {
-					update_post_meta($post_id, 'sfly_guest_link', esc_url($_REQUEST['sfly_guest_link']));
-				}
-				if (isset($_REQUEST['sfly_guest_author_description'])) {
-					update_post_meta($post_id, 'sfly_guest_author_description', wp_kses_post($_REQUEST['sfly_guest_author_description']));
-				}
-				if (isset($_REQUEST['sfly_guest_author_email'])) {
-					update_post_meta($post_id, 'sfly_guest_author_email', esc_html($_REQUEST['sfly_guest_author_email']));
-				}
-			}
-		}
+
 
 		/**
 		 * add_quick_meta_box function.
@@ -1029,7 +1000,7 @@ if (!class_exists('sfly_guest_author')):
 			// Add an nonce field so we can check for it later.
 			wp_nonce_field('sfly_guest_author_box', 'sfly_guest_author_nonce');
 			// Use get_post_meta to retrieve an existing values from the database.
-			$value = sanitize_text_field(get_post_meta($post->ID, 'sfly_guest_author_names', true));
+			$author = get_post_meta($post->ID, 'sfly_guest_author_names', true);
 			$link = esc_url(get_post_meta($post->ID, 'sfly_guest_link', true));
 
 			$options = get_option('guest_author_name_settings');
@@ -1038,7 +1009,7 @@ if (!class_exists('sfly_guest_author')):
 			if ($allowhtml)
 				$description = wp_kses_post(get_post_meta($id, 'sfly_guest_author_description', true));
 			else
-				$description = esc_attr(get_post_meta($id, 'sfly_guest_author_description', true));
+				$description = (get_post_meta($id, 'sfly_guest_author_description', true));
 
 			if (!$description)
 				$description = "";
@@ -1049,7 +1020,7 @@ if (!class_exists('sfly_guest_author')):
 			_e('Guest Author Name(s)', 'sfly_guest_author');
 			echo '</label> ';
 			echo '<input type="text" id="sfly_guest_author" name="sfly_guest_author"';
-			echo ' value="' . $value . '" style="max-width:100%" size="150" class="widefat" />';
+			echo ' value="' . esc_attr($author) . '" style="max-width:100%" size="150" class="widefat" />';
 			echo '<br/><label for="sfly_guest_link">';
 			_e('Guest URL', 'sfly_guest_link');
 			echo '</label><br/>';
@@ -1058,7 +1029,7 @@ if (!class_exists('sfly_guest_author')):
 			echo '<br/><label for="sfly_guest_description">';
 			_e('Guest Description', 'sfly_guest_description');
 			echo '</label><br/> ';
-			echo '<textarea id="sfly_guest_author_description" name="sfly_guest_author_description" style="width:100%;height:40px;">' . $description . '</textarea>';
+			echo '<textarea id="sfly_guest_author_description" name="sfly_guest_author_description" style="width:100%;height:40px;">' . esc_textarea($description) . '</textarea>';
 			echo '<label for="sfly_guest_author_email">';
 			_e('Guest Gravatar Email', 'sfly_guest_author_email');
 			echo '</label> ';
@@ -1087,9 +1058,9 @@ if (!class_exists('sfly_guest_author')):
 		{
 			global $g_post_id;
 			if (isset($g_post_id) && $g_post_id > 0) {
-				$author = esc_attr(get_post_meta($g_post_id, 'sfly_guest_author_names', true));
+				$author = get_post_meta($g_post_id, 'sfly_guest_author_names', true);
 				if ($author)
-					$name = $author;
+					return (esc_attr($author));
 			}
 			return $name;
 
@@ -1101,7 +1072,7 @@ if (!class_exists('sfly_guest_author')):
 			global $g_post_id;
 
 			if (isset($g_post_id) && $g_post_id > 0) {
-				$author = esc_attr(get_post_meta($g_post_id, 'sfly_guest_author_names', true));
+				$author = get_post_meta($g_post_id, 'sfly_guest_author_names', true);
 				if ($author) {
 					$link = get_post_meta($g_post_id, 'sfly_guest_link', true);
 					if (!$link)

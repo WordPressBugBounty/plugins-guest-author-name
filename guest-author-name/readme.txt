@@ -3,8 +3,8 @@ Contributors: nomadcoder, seancjones
 Donate link: https://www.paypal.com/paypalme/nomadnewyork
 Tags: Guest Author Name, Override Author Name, Author
 Requires at least: 4.1
-Tested up to: 6.9
-Stable Tag: 4.42
+Tested up to: 7.1
+Stable Tag: 4.50
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Create a post and override the author name with one or more names or text. You can also create a link for the author name field
 
 == Description ==
-Version 4.41
+Version 4.50
 
 Free
 
@@ -24,7 +24,6 @@ Free
 Create a post and override the author name with one or more names or text. You can also create a link for the author name field, add a description and an email address for the gravatar.
 
 Premium
-Sorry, we do not have the resources to manage sales and support right now. Our premium plugin should be available again in July 2020.
 
 Additional Features:
 1) Re-use & save guest authors
@@ -97,7 +96,7 @@ This was a bug, but if you were using it as a feature, then you can use this cod
         $author = get_post_meta( $id, 'sfly_guest_author_names', true );
         if ( $author && is_singular() )  {
 
-            $og_tags['og:title']           =   $author;
+            $og_tags['og:title']           =  esc_attr( $author );
             // any other tags you want to add here
             // for more examples see https://gist.github.com/natebot/6323846
         }
@@ -111,6 +110,14 @@ This was a bug, but if you were using it as a feature, then you can use this cod
 2. Post with Guest Author
 3. Settings Page
 == Changelog ==
+= 4.50 = 
+CVE-2026-126009/Manuel 2/5: Remove 'wp_filter_kses', properly escape guest author description
+Manuel 1 : Properly escape author name
+Manuel 3:  Undefined $options in sfly_guest_author_add_filters()
+Manuel 4:  Remove unused function save_quick_meta
+Manuel 5:  esc_textarea when outputting the guest author description 
+Manuel 6:  Gravatar URLs still use HTTP, changed to https
+Manuel 7:  Backwards compatibility for htmlentities not done in this version - low priority. Please report if there are issues.
 = 4.42 = 
 Fix: Security fix broke punctuation
 = 4.41 =
