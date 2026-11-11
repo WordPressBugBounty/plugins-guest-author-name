@@ -6,10 +6,10 @@ Plugin Name: (Simply) Guest Author Name
 Slug: guest-author-name
 Plugin URI: https://plugins.shooflysolutions.com/guest-author-name
 Description: An ideal plugin for cross posting. Guest Author Name helps you to publish posts by authors without having to add them as users. If the Guest Author field is filled in on the post, the Guest Author name will override the author.  The optional Url link allows you to link to another web site.
-Version: 4.50
-Author URI: https://www.shooflysolutions.com
+Version: 4.51
+Author URI: https://www.plugins.shooflysolutions.com
 Copyright (C) 2015, 2016 Shoofly Solutions
-Contact me at https:////www.shooflysolutions.com
+Contact me at https://www.plugins.shooflysolutions.com
 Text Domain: sfly_guest_author
 License:     GPL2
  License URI: https://www.gnu.org/licenses/gpl-2.0.html */
@@ -303,7 +303,7 @@ if (!class_exists('sfly_guest_author')):
 				$url = $comment->comment_author_url;
 
 
-				if (empty($url) || 'https:////' == $url) {
+				if (empty($url) || 'https://' == $url) {
 					$return = $author;
 				} else {
 					$return = "<a href='$url' rel='external nofollow' class='url'>$author</a>";
@@ -675,9 +675,7 @@ if (!class_exists('sfly_guest_author')):
 
 			if (isset($avatar_url)) {
 				$avatar_url = "'" . $avatar_url . "'";
-
-				$html = preg_replace('/<a href="(https://\/\/)?[\w.]+\/([\w]+)"\s?>/', $avatar_url, $url);
-
+				$html = preg_replace('/<a href="(https:\/\/)?[\w.]+\/([\w]+)"\s?>/', $avatar_url, $url);
 				return $html;
 			} else {
 				return $url;
@@ -698,7 +696,7 @@ if (!class_exists('sfly_guest_author')):
 		function get_guest_gravatar($email, $s = 80, $d = 'mm', $r = 'g', $img = false, $atts = array())
 		{
 
-			$url = 'https:////www.gravatar.com/avatar/';
+			$url = 'https://www.gravatar.com/avatar/';
 			$url .= md5(strtolower(trim($email)));
 
 			$url .= "?s=$s&d=$d&r=$r";
@@ -726,7 +724,7 @@ if (!class_exists('sfly_guest_author')):
 		 */
 		function get_guest_gravatar_link($email, $s = 80, $d = 'mm', $r = 'g', $img = false, $atts = array())
 		{
-			$link = 'https:////www.gravatar.com/avatar/';
+			$link = 'https://www.gravatar.com/avatar/';
 			$link .= md5(strtolower(trim($email)));
 
 			$link .= "?s=$s&d=$d&r=$r";

@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/paypalme/nomadnewyork
 Tags: Guest Author Name, Override Author Name, Author
 Requires at least: 4.1
 Tested up to: 7.1
-Stable Tag: 4.50
+Stable Tag: 4.51
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -110,6 +110,8 @@ This was a bug, but if you were using it as a feature, then you can use this cod
 2. Post with Guest Author
 3. Settings Page
 == Changelog ==
+= 4.51 = 
+= Fix bad https search and replace 
 = 4.50 = 
 CVE-2026-126009/Manuel 2/5: Remove 'wp_filter_kses', properly escape guest author description
 Manuel 1 : Properly escape author name
