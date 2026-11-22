@@ -1,10 +1,10 @@
-=== Plugin Name ===
+=== Guest Author Name ===
 Contributors: nomadcoder, seancjones
 Donate link: https://www.paypal.com/paypalme/nomadnewyork
 Tags: Guest Author Name, Override Author Name, Author
 Requires at least: 4.1
 Tested up to: 7.1
-Stable Tag: 4.51
+Stable Tag: 4.60
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Create a post and override the author name with one or more names or text. You can also create a link for the author name field
 
 == Description ==
-Version 4.50
+Version 4.60
 
 Free
 
@@ -110,6 +110,14 @@ This was a bug, but if you were using it as a feature, then you can use this cod
 2. Post with Guest Author
 3. Settings Page
 == Changelog ==
+= 4.60 = 
+CVE-2026-131821 - Comment author link on guest author post
+Remove unused functions & clean up multiple issues
+Fix: type $g_post_id = nulll;
+***Open Guest Author link in new window and Remove hyperlink from guest author name beta features have been removed. 
+***sfly_guest_author_enqueue_scripts function that handled this has been removed. 
+***Contact shooflysolutions@gmail.com for assistance with this as it is theme specific javascript. 
+Text domain changed from sfly_guest_author to guest-author-name
 = 4.51 = 
 = Fix bad https search and replace 
 = 4.50 = 

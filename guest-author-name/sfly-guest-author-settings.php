@@ -1,4 +1,6 @@
 <?php
+if (!defined('ABSPATH'))
+	exit;
 if (!class_exists('guest_author_settings')) {
 	/**
 	 * guest_author_admin_menu class.
@@ -37,8 +39,12 @@ if (!class_exists('guest_author_settings')) {
 		function guest_author_name_settings_init()
 		{
 
-			register_setting('guest_author_pluginPage', 'guest_author_name_settings');
-
+			//register_setting('guest_author_pluginPage', 'guest_author_name_settings');
+			register_setting(
+				'guest_author_pluginPage',
+				'guest_author_name_settings',
+				array($this, 'sanitize_settings')
+			);
 			add_settings_section(
 				'guest_author_name_pluginPage_section',
 				'',
@@ -83,31 +89,8 @@ if (!class_exists('guest_author_settings')) {
 				'guest_author_name_pluginPage_section'
 
 			);
-			add_settings_field(
-				'guest_author_open_new_window',
-				__('Open Guest Author link in new window (beta)', 'guest-author-name'),
-				array($this, 'guest_author_open_new_window'),
-				'guest_author_pluginPage',
-				'guest_author_name_pluginPage_section'
 
-			);
-			add_settings_field(
-				'guest_author_remove_link',
-				__('Remove hyperlink from guest author name  (beta)', 'guest-author-name'),
-				array($this, 'guest_author_remove_link'),
-				'guest_author_pluginPage',
-				'guest_author_name_pluginPage_section'
 
-			);
-
-			add_settings_field(
-				'guest_author_url_selector_single',
-				__('CSS selector for the author on single posts', 'guest-author-name'),
-				array($this, 'guest_author_url_selector_single'),
-				'guest_author_pluginPage',
-				'guest_author_name_pluginPage_section'
-
-			);
 
 			/*			add_settings_field(
 							'guest_author_url_selector_excerpt',
@@ -119,7 +102,29 @@ if (!class_exists('guest_author_settings')) {
 						)*/
 		}
 
+		public function sanitize_settings($input)
+		{
+			$sanitized = array();
+			if (!is_array($input)) {
+				return $sanitized;
+			}
 
+			$checkboxes = array(
+				'guest_author_name_quickedit',
+				'guest_author_name_admin',
+				'guest_author_allow_html',
+				'guest_author_include_guest',
+				'guest_author_disable_for_comments',
+			);
+
+			foreach ($checkboxes as $key) {
+				if (!empty($input[$key])) {
+					$sanitized[$key] = 1;
+				}
+			}
+
+			return $sanitized;
+		}
 		/**
 		 * guest_author_name_quickedit_render function.
 		 *
@@ -205,72 +210,8 @@ if (!class_exists('guest_author_settings')) {
 
 		}
 
-		/**
-		 * guest_author_open_new_window function.
-		 *
-		 * @access public
-		 * @return void
-		 */
-		function guest_author_open_new_window()
-		{
 
-			$options = get_option('guest_author_name_settings');
-			$open = isset($options['guest_author_open_new_window']) ? true : false;
-			?>
-			<input type='checkbox' name='guest_author_name_settings[guest_author_open_new_window]' <?php checked($open, 1); ?>
-				value='1'>
-			<br><label>The css selector must be entered below</label>
-			<?php
 
-		}
-		/**
-		 * guest_author_open_remove_link function.
-		 *
-		 * @access public
-		 * @return void
-		 */
-		function guest_author_remove_link()
-		{
-
-			$options = get_option('guest_author_name_settings');
-			$open = isset($options['guest_author_remove_link']) ? true : false;
-			?>
-			<input type='checkbox' name='guest_author_name_settings[guest_author_remove_link]' <?php checked($open, 1); ?>
-				value='1'>
-			<br><label>The css selector must be entered below</label>
-			<?php
-
-		}
-		function guest_author_url_selector_single()
-		{
-			$options = get_option('guest_author_name_settings');
-			if (isset($options['guest_author_url_selector_single'])) {
-				$selector = esc_attr($options['guest_author_url_selector_single']);
-			} else {
-				$selector = "";
-			}
-			?>
-			<input type='text' name='guest_author_name_settings[guest_author_url_selector_single]' value="<?php echo $selector; ?>">
-			<br><label>In order remove the author link or to open the author url in a new window, the css selector must be entered
-				here</label><br><a
-				href="https://www.plugins.shooflysolutions.com/guest-author-name/knowledge-base/enabling-advanced-author-features/ target="
-				_blank">How do I?</a><?php
-		}
-		/* guest_author_user_role function.
-		 *
-		 * @access public
-		 * @return void
-		 */
-		function guest_author_user_role()
-		{
-			$options = get_option('guest_author_name_settings ');
-			$selected = isset($options['guest_author_user_role']) ? esc_attr($options['guest_author_user_role']) : 'author';
-
-			?><select id="guest_author_user_role" name="guest_author_name_settings['guest_author_user_role']">
-
-				<?php wp_dropdown_roles($selected); ?>
-			</select><?php
-		}
 		/**
 		 * guest_author_name_settings_section_callback function.
 		 *
@@ -307,23 +248,27 @@ if (!class_exists('guest_author_settings')) {
 
 			</form>
 			<div>
-				<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+				<p>Please contact us for details on opening an author link in an external window or removing the link from the
+					author name. The BETA code was removed for security purposes</p>
+				<p><a href="https://www.paypal.com/paypalme/nomadnewyork" target="blank">Buy me coffee</a></p>
+				<!--<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
 					<h3>Thank you for using our plugin. Donations for extended support are appreciated but never required!</h3>
 					<input type="hidden" name="cmd" value="_s-xclick">
 					<input type="hidden" name="hosted_button_id" value="FTBD2UDXFJDB6">
 					<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit"
 						alt="PayPal - The safer, easier way to pay online!">
 					<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
-				</form>
+				</form>00>
 			</div>
 			<div style="text-align:center">
-				<a target-"_blank" href="https://plugins.shooflysolutions.com/guest-author-name/" style="font-size:16px;">Try
+				<a target="_blank" href="https://plugins.shooflysolutions.com/guest-author-name/" style="font-size:16px;">Try
 					premium for 7 days</a>
-				<div style="text-align:center">
-					<a target='_blank' href="https://wordpress.org/support/plugin/guest-author-name/reviews/"
-						style="font-size:16px;">You can also help by rating this plugin!</a>
-				</div>
-				<?php
+			</div>
+			<div style="text-align:center">
+				<a target='_blank' href="https://wordpress.org/support/plugin/guest-author-name/reviews/"
+					style="font-size:16px;">You can also help by rating this plugin!</a>
+			</div>
+			<?php
 
 		}
 

@@ -6,7 +6,7 @@ Plugin Name: (Simply) Guest Author Name
 Slug: guest-author-name
 Plugin URI: https://plugins.shooflysolutions.com/guest-author-name
 Description: An ideal plugin for cross posting. Guest Author Name helps you to publish posts by authors without having to add them as users. If the Guest Author field is filled in on the post, the Guest Author name will override the author.  The optional Url link allows you to link to another web site.
-Version: 4.51
+Version: 4.60
 Author URI: https://www.plugins.shooflysolutions.com
 Copyright (C) 2015, 2016 Shoofly Solutions
 Contact me at https://www.plugins.shooflysolutions.com
@@ -42,7 +42,7 @@ if (!class_exists('sfly_guest_author')):
 			$options = get_option('guest_author_name_settings');  //load settings
 			self::sfly_guest_author_add_filters(); //add filters
 			$this->comment_list = false; //flag to let us know if wp is printing comments
-			add_action('wp_enqueue_scripts', array($this, 'sfly_guest_author_enqueue_scripts')); //enqueue scripts
+			//add_action('wp_enqueue_scripts', array($this, 'sfly_guest_author_enqueue_scripts')); //enqueue scripts
 			add_action('get_sidebar', array($this, 'sfly_guest_author_add_filters')); // action to disable plugin on the sidebar
 			$disable = isset($options['guest_author_disable_for_comments']) ? true : false; //disable guest authors for comment section
 
@@ -69,73 +69,9 @@ if (!class_exists('sfly_guest_author')):
 
 		}
 
-		/**
-		 * sfly_guest_author_open_link function is not being used currently.
-		 * append jQuery to existing script file
-		 * @access public
-		 * @return void
-		 */
-		function sfly_guest_author_open_link($options, $open = true, $clear = false)
-		{ //set the url to open in a new window
-
-			if ($open || $clear) {
-				$selector = esc_attr($options['guest_author_url_selector_single']);
-				if ($selector) {
-					$script = '';
-					if ($open) {
-						$script = "
-								(function($) {
-								var url      = window.location.href;
-								var href   =  jQuery('.sfly_guest-author-post $selector' ).attr('href');
-
-
-								if ( url != href ) {
-									$('.sfly_guest-author-post $selector' ).attr('target', '_blank');
-								}
-								})(jQuery);";
-						$success = wp_add_inline_script('guest_author_post_scripts', $script);
 
 
 
-					}
-					if ($clear) {
-						$script = "
-								(function($) {
-
-								 $('.sfly_guest-author-post $selector' ).contents().unwrap();
-								})(jQuery);";
-
-						$success = wp_add_inline_script('guest_author_post_scripts', $script);
-
-					}
-				}
-			}
-
-		}
-
-
-		/**
-		 * sfly_guest_author_enqueue_scripts function.
-		 * Enqueue Scripts
-		 * @access public
-		 * @return void
-		 */
-		function sfly_guest_author_enqueue_scripts()
-		{
-
-			$options = get_option('guest_author_name_settings');
-			$open = isset($options['guest_author_open_new_window']) ? true : false;
-			$clear = isset($options['guest_author_remove_link']) ? true : false;
-
-			if ($open || $clear) {
-				wp_enqueue_script('jquery');
-
-				wp_enqueue_script('guest_author_post_scripts', plugins_url('assets/guest-author-post.js', __FILE__), array('jquery'), '1.10', true);
-				$this->sfly_guest_author_open_link($options, $open, $clear);
-			}
-			//remove_filter('pre_user_description', 'wp_filter_kses'); - CVE-2026-126009
-
-		}
 
 		/**
 		 * sfly_guest_author_add_filters function.
@@ -205,22 +141,7 @@ if (!class_exists('sfly_guest_author')):
 			remove_filter('get_the_author_display_name', array($this, 'guest_author_name'));
 			remove_filter('body_class', array($this, 'sfly_guest_author_body_class'));            //add some classes to the body class
 		}
-		function sfly_guest_author_excerpt($content)
-		{
-			global $authordata;
-			if (isset($authordata) && $authordata->guest_author) {
-				$content = $content . '<label style="visibility:hidden" class="guest-author-data" data-url="' . $authordata->user_url . '" data-name="' . $authordata->display_name . '">';
-			}
-			return $content;
-		}
-		function sfly_guest_author_content($content)
-		{
-			global $authordata;
-			if (isset($authordata) && $authordata->guest_author) {
-				$content = $content . '<label style="visibility:hidden" id="guest-author-data" data-url="' . $authordata->user_url . '" data-name="' . $authordata->display_name . '">';
-			}
-			return $content;
-		}
+
 		/**
 		 * guest_author_canonical_link function.
 		 * Handle paging
@@ -278,7 +199,8 @@ if (!class_exists('sfly_guest_author')):
 		 */
 		function comment_author($author, $comment_ID, $comment)
 		{
-			if ($author != $comment->author)
+
+			if ($author != $comment->comment_author)
 				$author = $comment->comment_author;
 
 			return esc_attr($author);
@@ -298,37 +220,22 @@ if (!class_exists('sfly_guest_author')):
 		function comment_author_link($return, $author, $comment_ID)
 		{
 
-			$comment = get_comment($comment_ID);
-			if ($author != $comment->author) {
-				$url = $comment->comment_author_url;
 
+
+			$comment = get_comment($comment_ID);
+
+			if ($author != $comment->comment_author) {
+				$url = esc_url($comment->comment_author_url);
 
 				if (empty($url) || 'https://' == $url) {
-					$return = $author;
+					$return = esc_html($comment->comment_author);
 				} else {
-					$return = "<a href='$url' rel='external nofollow' class='url'>$author</a>";
+					$return = '<a href="' . esc_url($comment->comment_author_url) . '" rel="external nofollow" class="url">' . esc_html($comment->comment_author) . '</a>';
 				}
 			}
 			return $return;
 		}
-		/**
-		 * is_classic_editor_plugin_active function.
-		 * check to see if the classic editor is active
-		 * @access public
-		 * @return void
-		 */
-		function is_classic_editor_plugin_active()
-		{
-			if (!function_exists('is_plugin_active')) {
-				include_once ABSPATH . 'wp-admin/includes/plugin.php';
-			}
 
-			if (is_plugin_active('classic-editor/classic-editor.php')) {
-				return true;
-			}
-
-			return false;
-		}
 		/**
 		 * sfly_guest_author_body_class function.
 		 * Add a class to the post body
@@ -357,7 +264,7 @@ if (!class_exists('sfly_guest_author')):
 		{
 			$id = $this->get_post_id();
 			$gauthor = get_post_meta($id, 'sfly_guest_author_names', true);
-			$guest_author_post_id = null;
+
 			if (!$gauthor)
 				return;
 
@@ -500,7 +407,7 @@ if (!class_exists('sfly_guest_author')):
 				if ($allowhtml) {
 					$description = wp_kses_post(get_post_meta($id, 'sfly_guest_author_description', true));
 				} else
-					$description = esc_attr(get_post_meta($id, 'sfly_guest_author_description', true));
+					$description = esc_html(get_post_meta($id, 'sfly_guest_author_description', true));
 
 				if (!$description)
 					$description = "";
@@ -539,7 +446,7 @@ if (!class_exists('sfly_guest_author')):
 			$id = $this->get_post_id();
 			$author = get_post_meta($id, 'sfly_guest_author_names', true);
 			if ($author) {
-				$email = esc_html(get_post_meta($id, 'sfly_guest_author_email', true));
+				$email = sanitize_email(get_post_meta($id, 'sfly_guest_author_email', true));
 				if (!$email)
 					$email = "";
 			}
@@ -554,42 +461,37 @@ if (!class_exists('sfly_guest_author')):
 		 */
 		function guest_author_avatar($avatar, $id_or_email, $size, $default, $alt)
 		{
+			global $comment;
+
+			if (
+				$id_or_email instanceof WP_Comment
+				|| (is_object($id_or_email) && isset($id_or_email->comment_ID))
+				|| (isset($comment) && !empty($comment))
+				|| $this->comment_list
+			) {
+				return $avatar;
+			}
 
 			global $guest_author_post_id;
 			if ((!isset($guest_author_post_id) || $guest_author_post_id <= 0)) {
 				return $avatar;
 			}
 
-			global $comment;
+			$id = $this->get_post_id();
+
+			$author = get_post_meta($id, 'sfly_guest_author_names', true);
+
+			if ($author) {
+				$email = sanitize_email(get_post_meta($id, 'sfly_guest_author_email', true));
 
 
-
-			if (isset($comment) && $this->comment_list) {
-				$email = $comment->comment_author_email;
 				if ($email) {
-					//$image_path = $this->get_guest_gravatar($email);
-					$avatar = $this->guest_author_avatar_url_link($avatar, $email); // '<img src="'.$image_path.'" width="'.$size.'" height="'.$size.'" />';
-				} else {
-					$avatar = $default;
+					//	$image_path = $this->get_author_avatar($email);
+					$avatar = $this->guest_author_avatar_url_link($avatar, $email);// '<img src="'.$image_path.'" width="'.$size.'" height="'.$size.'" />';
 				}
 
-
-			} else {
-				$id = $this->get_post_id();
-
-				$author = get_post_meta($id, 'sfly_guest_author_names', true);
-
-				if ($author) {
-					$email = esc_html(get_post_meta($id, 'sfly_guest_author_email', true));
-
-
-					if ($email) {
-						//	$image_path = $this->get_author_avatar($email);
-						$avatar = $this->guest_author_avatar_url_link($avatar, $email);// '<img src="'.$image_path.'" width="'.$size.'" height="'.$size.'" />';
-					}
-
-				}
 			}
+
 
 			return $avatar;
 		}
@@ -604,28 +506,31 @@ if (!class_exists('sfly_guest_author')):
 		 */
 		function guest_avatar_link($url, $email, $args = array())
 		{
-
-			global $guest_author_post_id;
 			global $comment;
-			if (isset($comment) && $this->comment_list) {
-				$cemail = $comment->comment_author_email;
-				if ($cemail) {
-					$url = $this->get_guest_gravatar_link($cemail);
-				}
-			} else {
-				$id = $this->get_post_id();
-
-				$author = get_post_meta($id, 'sfly_guest_author_names', true);
-
-				if ($author) {
-					$email = esc_html(get_post_meta($id, 'sfly_guest_author_email', true));
-					if ($email) {
-						$url = $this->get_guest_gravatar_link($email);
-					}
-				}
-
-
+			// If this is a comment return
+			if (
+				$email instanceof WP_Comment
+				|| (is_object($email) && isset($email->comment_ID))
+				|| (isset($comment) && !empty($comment))
+				|| $this->comment_list
+			) {
+				return $url;
 			}
+			global $guest_author_post_id;
+
+			$id = $this->get_post_id();
+
+			$author = get_post_meta($id, 'sfly_guest_author_names', true);
+
+			if ($author) {
+				$email = sanitize_email(get_post_meta($id, 'sfly_guest_author_email', true));
+				if ($email) {
+					$url = $this->get_guest_gravatar_link($email);
+				}
+			}
+
+
+
 			return $url;
 		}
 
@@ -673,42 +578,10 @@ if (!class_exists('sfly_guest_author')):
 
 			}
 
-			if (isset($avatar_url)) {
-				$avatar_url = "'" . $avatar_url . "'";
-				$html = preg_replace('/<a href="(https:\/\/)?[\w.]+\/([\w]+)"\s?>/', $avatar_url, $url);
-				return $html;
-			} else {
-				return $url;
-			}
-		}
-		/**
-		 * get_guest_gravatar function.
-		 *
-		 * @access public
-		 * @param mixed $email
-		 * @param int $s (default: 80)
-		 * @param string $d (default: 'mm')
-		 * @param string $r (default: 'g')
-		 * @param bool $img (default: false)
-		 * @param array $atts (default: array())
-		 * @return void
-		 */
-		function get_guest_gravatar($email, $s = 80, $d = 'mm', $r = 'g', $img = false, $atts = array())
-		{
-
-			$url = 'https://www.gravatar.com/avatar/';
-			$url .= md5(strtolower(trim($email)));
-
-			$url .= "?s=$s&d=$d&r=$r";
-			if ($img) {
-				$url = '<img src="' . $url . '"';
-				foreach ($atts as $key => $val)
-					$url .= ' ' . $key . '="' . $val . '"';
-				$url .= ' />';
-			}
 
 			return $url;
 		}
+
 
 		/**
 		 * get_guest_gravatar_link function.
@@ -767,7 +640,7 @@ if (!class_exists('sfly_guest_author')):
 				add_meta_box(
 					'some_meta_box_name'
 					,
-					__('Guest Author', 'sfly_guest_author')
+					__('Guest Author', 'guest-author-name')
 					,
 					array($this, 'render_meta_box_content')
 					,
@@ -802,21 +675,7 @@ if (!class_exists('sfly_guest_author')):
 
 		// But remove it again on the edit screen (other screens to?)
 
-		/**
-		 * remove_dummy_column function.
-		 *
-		 * @access public
-		 * @param mixed $cols
-		 * @return void
-		 */
-		function remove_dummy_column($cols)
-		{
-			unset($cols['sfly_guest_author']);
-			unset($cols['sfly_guest_link']);
-			unset($cols['sfly_guest_author_description']);
-			unset($cols['sfly_guest_author_email']);
-			return $cols;
-		}
+
 
 		/**
 		 * render_post_columns function.
@@ -835,7 +694,7 @@ if (!class_exists('sfly_guest_author')):
 			if ($allowhtml)
 				$description = wp_kses_post(get_post_meta($id, 'sfly_guest_author_description', true));
 			else
-				$description = esc_attr(get_post_meta($id, 'sfly_guest_author_description', true));
+				$description = esc_html(get_post_meta($id, 'sfly_guest_author_description', true));
 
 			if (!$description)
 				$description = "";
@@ -848,7 +707,7 @@ if (!class_exists('sfly_guest_author')):
 					echo esc_url(get_post_meta($id, 'sfly_guest_link', TRUE));
 					break;
 				case 'sfly_guest_author_description':
-					echo $description;
+					echo esc_html($description);
 					break;
 				case 'sfly_guest_author_email':
 					echo esc_html(get_post_meta($id, 'sfly_guest_author_email', TRUE));
@@ -888,7 +747,7 @@ if (!class_exists('sfly_guest_author')):
 					case 'sfly_guest_author':
 						?>
 						<fieldset class="inline-edit-col-right inline-edit-book">
-							<div class="inline-edit-col column-<?php echo $col; ?>" style="display:block; border:1px;">
+							<div class="inline-edit-col column-<?php echo esc_attr($col); ?>" style="display:block; border:1px;">
 								<label class="inline-edit-group">
 									<div style='display:block'><span class="sfly_guest_author" style="width:150px;">Guest Author
 											Name(s)</span><input name="sfly_guest_author" class="widefat" /></div>
@@ -953,20 +812,27 @@ if (!class_exists('sfly_guest_author')):
 			}
 
 			// Sanitize the user input.
-			$author = $this->strip_to_safe_words(sanitize_text_field($_POST['sfly_guest_author']));
-
-			$link = esc_url($_POST['sfly_guest_link']);
+			$author = isset($_POST['sfly_guest_author'])
+				? $this->strip_to_safe_words(sanitize_text_field(wp_unslash($_POST['sfly_guest_author'])))
+				: '';
+			$link = isset($_POST['sfly_guest_link'])
+				? esc_url_raw(wp_unslash($_POST['sfly_guest_link']))
+				: '';
 
 			$options = get_option('guest_author_name_settings');
 			$allowhtml = isset($options['guest_author_allow_html']) ? true : false;
 
+			$raw_description = isset($_POST['sfly_guest_author_description'])
+				? wp_unslash($_POST['sfly_guest_author_description'])
+				: '';
 
-			if ($allowhtml)
-				$description = wp_kses_post($_POST['sfly_guest_author_description']);
-			else
-				$description = sanitize_text_field($_POST['sfly_guest_author_description']);
+			$description = $allowhtml
+				? wp_kses_post($raw_description)
+				: sanitize_text_field($raw_description);
 
-			$email = sanitize_email($_POST['sfly_guest_author_email']);
+			$email = isset($_POST['sfly_guest_author_email'])
+				? sanitize_email(wp_unslash($_POST['sfly_guest_author_email']))
+				: '';
 			// Update the meta field.
 			update_post_meta($post_id, 'sfly_guest_author_names', $author);
 			update_post_meta($post_id, 'sfly_guest_link', $link);
@@ -1012,27 +878,27 @@ if (!class_exists('sfly_guest_author')):
 			if (!$description)
 				$description = "";
 
-			$email = esc_html(get_post_meta($post->ID, 'sfly_guest_author_email', true));
+			$email = sanitize_email(get_post_meta($post->ID, 'sfly_guest_author_email', true));
 			// Display the form, using the current values.
 			echo '<label for="sfly_guest_author">';
-			_e('Guest Author Name(s)', 'sfly_guest_author');
+			_e('Guest Author Name(s)', 'guest-author-name');
 			echo '</label> ';
 			echo '<input type="text" id="sfly_guest_author" name="sfly_guest_author"';
 			echo ' value="' . esc_attr($author) . '" style="max-width:100%" size="150" class="widefat" />';
 			echo '<br/><label for="sfly_guest_link">';
-			_e('Guest URL', 'sfly_guest_link');
+			_e('Guest URL', 'guest-author-name');
 			echo '</label><br/>';
 			echo '<input type="text" id="sfly_guest_link" name="sfly_guest_link"';
-			echo ' value="' . $link . '" style="max-width:100%" class="widefat"  />';
+			echo ' value="' . esc_html($link) . '" style="max-width:100%" class="widefat"  />';
 			echo '<br/><label for="sfly_guest_description">';
-			_e('Guest Description', 'sfly_guest_description');
+			_e('Guest Description', 'guest-author-name');
 			echo '</label><br/> ';
 			echo '<textarea id="sfly_guest_author_description" name="sfly_guest_author_description" style="width:100%;height:40px;">' . esc_textarea($description) . '</textarea>';
 			echo '<label for="sfly_guest_author_email">';
-			_e('Guest Gravatar Email', 'sfly_guest_author_email');
+			_e('Guest Gravatar Email', 'guest-author-name');
 			echo '</label> ';
 			echo '<input type="text" id="sfly_guest_author_email" name="sfly_guest_author_email"';
-			echo ' value="' . $email . '" style="max-width:100%" class="widefat" size="150" />';
+			echo ' value="' . esc_attr($email) . '" style="max-width:100%" class="widefat" size="150" />';
 		}
 		/****Functions for tag_div only ***/
 
@@ -1046,7 +912,7 @@ if (!class_exists('sfly_guest_author')):
 				add_filter('get_the_author_display_name', array($this, 'tag_div_display_name'), 99);
 
 			} else {
-				$g_post_id = nulll;
+				$g_post_id = null;
 				remove_filter('author_link', array($this, 'tag_div_author'), 99);
 				remove_filter('get_the_author_display_name', array($this, 'tag_div_display_name'), 99);
 			}
